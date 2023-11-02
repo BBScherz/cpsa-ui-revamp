@@ -64,6 +64,38 @@ class App(Frame):
         self.cwd = fd.askdirectory()
         if not os.path.exists(self.cwd + '/cpsa4.mk'):
             self.__createProjectWindow(parent)
+        self.createWorkArea()
+        
+
+
+    def __algebraSelect(self, f):
+        alg_label = Label(f, text="Select Type of Algebra")
+        alg_label.pack(side=TOP)
+ 
+        b = Radiobutton(f, text="Basic", variable=self.alg_type, value=0)
+        b.pack(side=LEFT)
+        dh = Radiobutton(f, text="Diffie-Hellman", variable=self.alg_type, value=1)
+        dh.pack(side=LEFT)
+    
+
+    def __createNewMessage(self, f):
+        msg_num = Label(f, text=f"Message {self.msg_count + 1}")
+        self.msg_count +=1
+        msg_num.pack(side=BOTTOM)
+        
+
+
+
+
+
+    def createWorkArea(self):
+        area = Frame(self.master)
+        self.__algebraSelect(area)
+        message_space = Frame(area)
+        new = ttk.Button(area, text=f"Create New Message +", command=lambda: self.__createNewMessage(message_space)).pack()
+        message_space.pack(side=BOTTOM)
+        area.pack()
+        
 
 
 
@@ -77,6 +109,10 @@ class App(Frame):
         root.minsize(405, 375)
 
         self.cwd = ''
+        self.valid_project = False
+        self.alg_type = ''
+        self.msg_count = 0
+        self.messages = []
         try:
             v = self.__checkCPSAVersion()
             self.version = v.stderr.decode('ascii')[5]
@@ -85,8 +121,6 @@ class App(Frame):
                                 \nGo to this link to install: https://hackage.haskell.org/package/cpsa and click below to close this program."""
             messagebox.showerror(title='Configuration Error!', message=NOINSTALLATION)
             # root.destroy()   TODO: Close the app at this line
-            
-
 
 
         menubar = Menu(root)
@@ -95,6 +129,8 @@ class App(Frame):
         menu_file = Menu(menubar)
         menubar.add_cascade(menu=menu_file, label='File')
         menu_file.add_command(label='Select project directory...', command=lambda: self.__openProjectDirectory(parent=root))
+
+       
 
         self.pack()
         
