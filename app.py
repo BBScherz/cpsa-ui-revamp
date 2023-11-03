@@ -4,6 +4,8 @@ from tkinter import ttk
 from tkinter import filedialog as fd
 from tkinter import messagebox
 
+from components import Messages as ms
+
 
 class App(Frame):
 
@@ -69,19 +71,26 @@ class App(Frame):
 
 
     def __algebraSelect(self, f):
-        alg_label = Label(f, text="Select Type of Algebra")
+        alg_frame = Frame(f)
+        alg_label = Label(alg_frame, text="Select Type of Algebra")
         alg_label.pack(side=TOP)
  
-        b = Radiobutton(f, text="Basic", variable=self.alg_type, value=0)
+        b = Radiobutton(alg_frame, text="Basic", variable=self.alg_type, value=1)
         b.pack(side=LEFT)
-        dh = Radiobutton(f, text="Diffie-Hellman", variable=self.alg_type, value=1)
+        dh = Radiobutton(alg_frame, text="Diffie-Hellman", variable=self.alg_type, value=0)
         dh.pack(side=LEFT)
+
+        alg_frame.pack()
     
 
     def __createNewMessage(self, f):
         msg_num = Label(f, text=f"Message {self.msg_count + 1}")
+        self.messages[self.msg_count] = ms.Message(id=self.msg_count)
+        
+        msg_num.grid(row=self.msg_count, column=0)
         self.msg_count +=1
-        msg_num.pack(side=BOTTOM)
+        print(self.messages)
+        
         
 
 
@@ -112,7 +121,7 @@ class App(Frame):
         self.valid_project = False
         self.alg_type = ''
         self.msg_count = 0
-        self.messages = []
+        self.messages = {}
         try:
             v = self.__checkCPSAVersion()
             self.version = v.stderr.decode('ascii')[5]
