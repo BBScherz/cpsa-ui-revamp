@@ -84,12 +84,26 @@ class App(Frame):
     
 
     def __createNewMessage(self, f):
-        msg_num = Label(f, text=f"Message {self.msg_count + 1}")
-        self.messages[self.msg_count] = ms.Message(id=self.msg_count)
+
+        created = ms.Message(id=self.msg_count)
+        new_message_frame = Frame(f, name=str(self.msg_count))
+
+        msg_num = Label(new_message_frame, text=f"Message {self.msg_count + 1}: ")
+        msg_send = Entry(new_message_frame, textvariable=created.sender)
+        msg_recv = Entry(new_message_frame, textvariable=created.recip)
+        msg_content = Entry(new_message_frame, textvariable=created.contents)
+
+        msg_num.pack(side=LEFT)
+        msg_send.pack(side=LEFT)
+        msg_recv.pack(side=LEFT)
+        msg_content.pack(side=LEFT)
+        new_message_frame.grid(row=self.msg_count, column=0)
         
-        msg_num.grid(row=self.msg_count, column=0)
+        self.messages[self.msg_count] = created
         self.msg_count +=1
-        print(self.messages)
+        
+        for m in list(self.messages.keys()):
+            print(self.messages[m].sender.get(), self.messages[m].recip.get(), self.messages[m].contents.get())
         
         
 
