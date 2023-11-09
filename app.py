@@ -66,7 +66,7 @@ class App(Frame):
         self.cwd = fd.askdirectory()
         if not os.path.exists(self.cwd + '/cpsa4.mk'):
             self.__createProjectWindow(parent)
-        self.createWorkArea()
+        self.__createWorkArea()
         
 
 
@@ -85,38 +85,69 @@ class App(Frame):
 
     def __createNewMessage(self, f):
 
-        created = ms.Message(id=self.msg_count)
-        new_message_frame = Frame(f, name=str(self.msg_count))
+        created = ms.Message(id=self.mid_counter)
+        new_message_frame = Frame(f, name=str(self.mid_counter))
 
-        msg_num = Label(new_message_frame, text=f"Message {self.msg_count + 1}: ")
-        msg_send = Entry(new_message_frame, textvariable=created.sender)
-        msg_recv = Entry(new_message_frame, textvariable=created.recip)
+        msg_num = Label(new_message_frame, text=f"Message {self.mid_counter + 1}: ")
+        msg_send = Entry(new_message_frame, textvariable=created.sender, width=8)
+        arrow = Label(new_message_frame, text='\u2192')
+        msg_recv = Entry(new_message_frame, textvariable=created.recip, width=8)
         msg_content = Entry(new_message_frame, textvariable=created.contents)
+        rem_msg = Button(new_message_frame, text='X', command= lambda: self.__removeMessage(f=new_message_frame, message=created))
 
-        msg_num.pack(side=LEFT)
-        msg_send.pack(side=LEFT)
-        msg_recv.pack(side=LEFT)
-        msg_content.pack(side=LEFT)
-        new_message_frame.grid(row=self.msg_count, column=0)
+        msg_num.pack(side=LEFT, padx=10)
+        msg_send.pack(side=LEFT, padx=10)
+        arrow.pack(side=LEFT)
+        msg_recv.pack(side=LEFT, padx=10)
+        msg_content.pack(side=LEFT, padx=10)
+        rem_msg.pack(side=LEFT, padx=10)
+        new_message_frame.grid(row=self.msg_count, column=0, pady=15)
         
-        self.messages[self.msg_count] = created
+        self.messages[self.mid_counter] = created
+        self.mid_counter += 1
         self.msg_count +=1
+        # print('msg counter:', self.msg_count)
+        # for m in list(self.messages.keys()):
+        #     print(self.messages[m].sender.get(), self.messages[m].recip.get(), self.messages[m].contents.get())
         
-        for m in list(self.messages.keys()):
-            print(self.messages[m].sender.get(), self.messages[m].recip.get(), self.messages[m].contents.get())
         
+    def __removeMessage(self, f, message):
         
+        try:
+            f.destroy()
+        except:
+            pass
+
+        
+        try:
+            del self.messages[message.id]
+            self.msg_count -= 1
+        except KeyError as e:
+            pass
+
+        # print('msg counter:', self.msg_count)
 
 
 
 
 
-    def createWorkArea(self):
+    def __createWorkArea(self):
         area = Frame(self.master)
         self.__algebraSelect(area)
-        message_space = Frame(area)
+        
+        
+        
+        
+        message_space = Canvas(area, highlightbackground='black')
+        scroll = Scrollbar(message_space, orient=VERTICAL, command=message_space.yview)
+        scroll.grid(column=1, sticky=NS)
+        message_space.configure(scrollregion=message_space.bbox(ALL))
+        message_space.configure(yscrollcommand=scroll.set)
+        
         new = ttk.Button(area, text=f"Create New Message +", command=lambda: self.__createNewMessage(message_space)).pack()
-        message_space.pack(side=BOTTOM)
+        sep = Label(area, text='Sender\tRecipient\tContents', font=('Helvetica 12 underline')).pack()
+        message_space.pack(side=BOTTOM, expand=True)
+
         area.pack()
         
 
@@ -134,6 +165,7 @@ class App(Frame):
         self.cwd = ''
         self.valid_project = False
         self.alg_type = ''
+        self.mid_counter = 0
         self.msg_count = 0
         self.messages = {}
         try:
