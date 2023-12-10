@@ -6,7 +6,8 @@ from tkinter import messagebox
 
 from components import Messages as ms
 from components import Roles as role
-
+from components import Protocol as pr
+from format_translators.translation import createHerald
 
 class App(Frame):
 
@@ -170,8 +171,13 @@ class App(Frame):
         area.pack()
         
 
-    def __compile(self):
+    def __compile(self, parent):
         roles = {}
+
+        project_herald = createHerald(title=self.herald_name, algebra=self.alg_type)
+        # print(project_herald)
+
+
 
         try:
             for m in list(self.messages.values()):
@@ -200,6 +206,10 @@ class App(Frame):
 
         for r in list(roles.values()):
             r.translateMessages()
+        al = 'basic' if self.alg_type.get() == 1 else 'diffie-hellman'
+        protocol = pr.Protocol(roles = list(roles.values()), algebra=al, name=self.herald_name.get())
+        print(protocol.proto)
+
 
 
         
@@ -213,14 +223,16 @@ class App(Frame):
 
         super().__init__(root)
         root.title('CPSA UI Revamp')
+        root.iconbitmap('assets/icon.ico')
         root.geometry("720x405")
         root.option_add('*tearOff', False)
         root.minsize(405, 375)
 
         self.cwd = ''
         self.valid_project = False
-        self.alg_type = ''
+        self.alg_type = IntVar()
         self.herald_name = StringVar()
+        self.project_name = StringVar()
         self.mid_counter = 0
         self.msg_count = 0
         self.messages = {}
@@ -243,9 +255,7 @@ class App(Frame):
 
         menu_compile = Menu(self.menubar)
         self.menubar.add_cascade(menu=menu_compile, label='Create', state='disabled')
-        menu_compile.add_command(label='Compile...', command=lambda: self.__compile())
-
-        
+        menu_compile.add_command(label='Compile...', command=lambda: self.__compile(parent=root))
 
         self.pack()
         
