@@ -38,5 +38,6 @@ class Role(object):
     def roleTransform(self):
 
         final_role = f"(defrole {self.name}\n\t"
+        final_role += '(vars)\n\t'
         final_role += self.trace + '\n)'
         return final_role

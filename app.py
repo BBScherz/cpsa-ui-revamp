@@ -1,4 +1,4 @@
-import os, subprocess
+import os, subprocess, sys
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog as fd
@@ -68,6 +68,7 @@ class App(Frame):
         self.cwd = fd.askdirectory()
         if not os.path.exists(self.cwd + '/cpsa4.mk'):
             self.__createProjectWindow(parent)
+        print(self.cwd)
         self.__createWorkArea()
         
 
@@ -138,13 +139,23 @@ class App(Frame):
 
     def __heraldName(self, f):
         name_frame = Frame(f)
-        name_label = Label(name_frame, text="Herald Title")
-        name_label.pack(side=TOP)
+        name_label = Label(name_frame, text="Herald Title:")
+        name_label.pack(side=LEFT)
  
         h = Entry(name_frame, textvariable=self.herald_name)
         h.pack(side=LEFT)
 
         name_frame.pack()
+
+    def __protocolName(self, f):
+        protocol_frame = Frame(f)
+        protocol_label = Label(protocol_frame, text="Protocol Name:")
+        protocol_label.pack(side=LEFT)
+
+        p = Entry(protocol_frame, textvariable=self.protocol_name)
+        p.pack()
+
+        protocol_frame.pack()
 
 
 
@@ -153,12 +164,13 @@ class App(Frame):
         area = Frame(self.master)
         
         self.__heraldName(area)
+        self.__protocolName(area)
         self.__algebraSelect(area)
         
         
         message_space = Canvas(area, highlightbackground='black')
         scroll = Scrollbar(message_space, orient=VERTICAL, command=message_space.yview)
-        # scroll.pack(side=RIGHT, fill=Y)
+        scroll.pack(side=RIGHT, fill=Y)
         message_space.config(scrollregion=message_space.bbox(ALL))
         message_space.config(yscrollcommand=scroll.set)
         
@@ -175,9 +187,6 @@ class App(Frame):
         roles = {}
 
         project_herald = createHerald(title=self.herald_name, algebra=self.alg_type)
-        # print(project_herald)
-
-
 
         try:
             for m in list(self.messages.values()):
@@ -195,7 +204,6 @@ class App(Frame):
         except:
             messagebox.showerror('Role Error!', 'A sender or recipient field was left blank.  Make sure all fields are valid and try again')
 
-        print(len(roles))
 
         for m in list(self.messages.values()):
             sender = m.sender.get()
@@ -207,13 +215,27 @@ class App(Frame):
         for r in list(roles.values()):
             r.translateMessages()
         al = 'basic' if self.alg_type.get() == 1 else 'diffie-hellman'
-        protocol = pr.Protocol(roles = list(roles.values()), algebra=al, name=self.herald_name.get())
-        print(protocol.proto)
+        protocol = pr.Protocol(roles = list(roles.values()), algebra=al, name=self.protocol_name.get())
 
-
+        to_file = f"{project_herald}\n\n{protocol.proto}"
+        filename = f"{self.protocol_name.get()}.scm"
+        open_cmd = 'explorer' if self.os == 'nt' else 'xdg-open'
+        
+        try:
+            with open(self.cwd + os.path.sep + filename, 'w', encoding='utf-8') as scm:
+                scm.write(to_file)
+            messagebox.showinfo('Success!', f"Your protocol can be found at the following filepath: {self.cwd + os.path.sep + filename}\nClick OK to open your project directory.")
+            self.__runcommand([open_cmd, f"\"{self.cwd}\""])
+        except:
+            messagebox.showerror('File Error!', 'The protcol could not be written to a file.')
 
         
-            
+    def __iconPath(self, path):
+        try:
+            base = base_path = getattr(sys, '_MEIPASS', os.path.dirname(os.path.abspath(__file__)))
+        except Exception:
+            base = os.path.abspath('.')
+        return os.path.join(base, path)
 
 
 
@@ -223,16 +245,17 @@ class App(Frame):
 
         super().__init__(root)
         root.title('CPSA UI Revamp')
-        root.iconbitmap('assets/icon.ico')
+        # root.iconbitmap(self.__iconPath('assets/icon.ico'))
         root.geometry("720x405")
         root.option_add('*tearOff', False)
         root.minsize(405, 375)
 
         self.cwd = ''
+        self.os = os.name
         self.valid_project = False
         self.alg_type = IntVar()
         self.herald_name = StringVar()
-        self.project_name = StringVar()
+        self.protocol_name = StringVar()
         self.mid_counter = 0
         self.msg_count = 0
         self.messages = {}
