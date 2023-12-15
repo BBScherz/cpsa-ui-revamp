@@ -1,4 +1,4 @@
-import os, subprocess, sys
+import os, subprocess, sys, re
 from tkinter import *
 from tkinter import ttk
 from tkinter import filedialog as fd
@@ -44,7 +44,14 @@ class App(Frame):
         Label(pop, text=NOTICE).pack()
 
         execute = ['cpsa4init']
-        cbtn = ttk.Button(pop, text='Create Project', command=lambda: self.__runcommand(execute, project_directory=True)).pack()
+        cbtn = ttk.Button(pop, text='Create Project', command=lambda: self.__projectWindowHelper(pop, cmd=execute)).pack()
+
+
+    def __projectWindowHelper(self, pop, cmd):
+        result = self.__runcommand(cmd, project_directory=True)
+        if result:
+            pop.destroy()
+
 
 
     ###########################################################
@@ -96,7 +103,7 @@ class App(Frame):
         arrow = Label(new_message_frame, text='\u2192')
         msg_recv = Entry(new_message_frame, textvariable=created.recip, width=8)
         msg_content = Entry(new_message_frame, textvariable=created.contents)
-        rem_msg = Button(new_message_frame, text='X', command= lambda: self.__removeMessage(f=new_message_frame, message=created))
+        rem_msg = Button(new_message_frame, text='X', command=lambda: self.__removeMessage(f=new_message_frame, message=created))
 
         msg_num.pack(side=LEFT, padx=10)
         msg_send.pack(side=LEFT, padx=10)
@@ -111,9 +118,6 @@ class App(Frame):
         self.msg_count +=1
 
         self.menubar.entryconfigure('Create', state='active')
-        # print('msg counter:', self.msg_count)
-        # for m in list(self.messages.keys()):
-        #     print(self.messages[m].sender.get(), self.messages[m].recip.get(), self.messages[m].contents.get())
         
         
     def __removeMessage(self, f, message):
@@ -244,7 +248,7 @@ class App(Frame):
     def __init__(self, root):
 
         super().__init__(root)
-        root.title('CPSA UI Revamp')
+        root.title('GCPSA')
         # root.iconbitmap(self.__iconPath('assets/icon.ico'))
         root.geometry("720x405")
         root.option_add('*tearOff', False)
@@ -266,7 +270,7 @@ class App(Frame):
             NOINSTALLATION = f""" No CPSA v4.x installtion was detected.  You may have an older version installed, or none at all.
                                 \nGo to this link to install: https://hackage.haskell.org/package/cpsa and click below to close this program."""
             messagebox.showerror(title='Configuration Error!', message=NOINSTALLATION)
-            # root.destroy()   TODO: Close the app at this line
+            self.menubar.entryconfigure('File', state='disabled')
 
 
         self.menubar = Menu(root)
